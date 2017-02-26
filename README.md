@@ -1,2 +1,2 @@
 # perl-courses
-TP
+Проекты по Perl в ТП.
