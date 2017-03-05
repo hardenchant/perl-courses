@@ -22,16 +22,17 @@ sub calculate {
 	};
 	my @rnd = keys %inhash;
 	my %hres;
+	my $success = 0;
 	
 	for my $i (0..20){
 		%hres = ();
-		my $success = 0;
+		$success = 0;
 		for my $key (keys %inhash) {
 			$success = 0;
 			for my $j (0..100){
 				my $suppose = @rnd[int rand($#rnd)];
-				unless (($inhash{$key} eq $suppose) || ($suppose eq $key)){
-					unless ((exists $hres{$suppose}) && ($hres{$suppose} eq $key))
+				unless ((defined($inhash{$key}) && ($inhash{$key} eq $suppose)) || ($suppose eq $key)){
+					unless ((exists($hres{$suppose})) && (defined($hres{$suppose})) && ($hres{$suppose} eq $key))
 					{
 						%hres = (%hres, $key, $suppose);
 						$success = 1;
@@ -43,9 +44,17 @@ sub calculate {
 		}
 		last if $success;
 	}
-	for my $i (keys %hres){
-		push @res,[$i, $hres{$i}];
+	
+	if ($success){
+		for my $k (keys %hres){
+			push @res,[$k, $hres{$k}];
+		}
 	}
+	else
+	{
+		print "Error: impossible combination!";
+	}
+	
 	# ...
 	#	push @res,[ "fromname", "toname" ];
 	# ...
