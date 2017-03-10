@@ -37,23 +37,33 @@ use warnings;
 sub clone {
 	my $orig = shift;
 	my $cloned;
+
+	my $vl = shift;
+	$vl = 1 unless $vl;
+	my $success = 1;
+
+	my $origg = shift;
+	$origg = $orig unless $origg;
 	# ...
 	# deep clone algorith here
 	if (ref $orig eq "ARRAY"){
 		if ($#{$orig} == -1){
-			$cloned = \[];
+			$cloned = [];
 		}
 		else
 		{
 			my @newarr;
 			for my $i (@$orig){
-				if((ref $i eq "ARRAY") && ($i eq $orig))
+				if((ref $i eq "ARRAY") && (($i eq $orig) || ($i eq $origg))) # 
 				{
+					$success = 0;
 					last;
 				}
 				else
 				{
-					push @newarr, clone($i);
+					my @temp = clone($i, $vl + 1, $origg);
+					$success = $temp[2];
+					push @newarr, $temp[0];
 				}
 			}
 			$cloned = \@newarr;
@@ -61,19 +71,21 @@ sub clone {
 	}
 	elsif (ref $orig eq "HASH"){
 		if (scalar keys %$orig == 0){
-			$cloned = \{};
+			$cloned = {};
 		}
 		else
 		{
 			my %newhash;
 			for my $i (keys %$orig){
-				if((ref $orig->{$i} eq "HASH") && ($orig->{$i} eq $orig)){
-					
+				if((ref $orig->{$i} eq "HASH") && (($orig->{$i} eq $orig) || ($orig->{$i} eq $origg))){ #  
+					$success = 0;
 					last;
 				}
 				else
 				{
-					%newhash = (%newhash, $i, clone($orig->{$i}));
+					my @temp = clone($orig->{$i}, $vl + 1, $origg);
+					$success = $temp[2];
+					%newhash = (%newhash, $i, $temp[0]);
 					
 				}
 			}
@@ -87,10 +99,22 @@ sub clone {
 	}
 	else
 	{
-		$cloned = undef;
-		
+		$success = 0;
 	}
-	return $cloned;
-}
 
+
+	if ($vl == 1){
+		if ($success == 1){
+			return $cloned;
+		}
+		else
+		{
+			return undef;
+		}
+	}
+	else
+	{
+		return $cloned, $vl, $success;
+	}
+}
 1;
