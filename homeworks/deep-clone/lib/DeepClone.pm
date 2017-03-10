@@ -38,11 +38,11 @@ sub clone {
 	my $orig = shift;
 	my $cloned;
 
-	my $vl = shift;
+	my $vl = shift;	# nesting level
 	$vl = 1 unless $vl;
-	my $success = 1;
+	my $success = 1; 
 
-	my $origg = shift;
+	my $origg = shift; #link to root of struct
 	$origg = $orig unless $origg;
 	# ...
 	# deep clone algorith here
@@ -54,7 +54,7 @@ sub clone {
 		{
 			my @newarr;
 			for my $i (@$orig){
-				if((ref $i eq "ARRAY") && (($i eq $orig) || ($i eq $origg))) # 
+				if((ref $i eq "ARRAY") && (($i eq $orig) || ($i eq $origg)))
 				{
 					$success = 0;
 					last;
@@ -77,7 +77,7 @@ sub clone {
 		{
 			my %newhash;
 			for my $i (keys %$orig){
-				if((ref $orig->{$i} eq "HASH") && (($orig->{$i} eq $orig) || ($orig->{$i} eq $origg))){ #  
+				if((ref $orig->{$i} eq "HASH") && (($orig->{$i} eq $orig) || ($orig->{$i} eq $origg))){
 					$success = 0;
 					last;
 				}
