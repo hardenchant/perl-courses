@@ -21,10 +21,7 @@ use Data::Dumper;
 local $Data::Dumper::Indent = 0;
 
 #replace $orig value with your structure
-my $or = [1,2];
-my $orr = \$or;
-
-my $orig   = [$or, $orr]; 
+my $orig   = undef; 
 my $cloned = DeepClone::clone($orig);
 
 say "ORIGINAL ", Dumper($orig);
