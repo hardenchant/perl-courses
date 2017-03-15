@@ -54,41 +54,30 @@ sub clone {
 	# deep clone algorith here
 	if (ref $orig eq "ARRAY"){
 		$cloned = [];
-		%$linklist = (%$linklist, $orig, \@$cloned);
+		$linklist->{$orig} = \@$cloned;
 		for my $i (@$orig){
-			my $success = 0;
-			for my $k (keys %$linklist){
-				if  ($i && $i eq $k){
-					push @$cloned, $linklist->{$k};
-					$success = 1;
-					last;
-				}
+			if  ($i && $linklist->{$i}){
+				push @$cloned, $linklist->{$i};
 			}
-			unless ($success){
-				my @temp = clone($i, $linklist);
-				$subfail = $temp[1];
+			else
+			{
+				(my $temp, $subfail) = clone($i, $linklist);
 				last if ($subfail);
-				push @$cloned, $temp[0];
+				push @$cloned, $temp;
 			} 
 		}
 	}
 	elsif (ref $orig eq "HASH"){
 		$cloned = {};
-		%$linklist = (%$linklist, $orig, \%$cloned);
+		$linklist->{$orig} = \%$cloned;
 		for my $i (keys %$orig){
-			my $success = 0;
-			for my $k (keys %$linklist){
-				if ($orig->{$i} && $orig->{$i} eq $k){
-					%$cloned = (%$cloned, $i, $linklist->{$k});
-					$success = 1;
-					last;
-				}
+			if ($orig->{$i} && $linklist->{$orig->{$i}}){
+				$cloned->{$i} = $linklist->{$orig->{$i}};
 			}
-			unless ($success){
-				my @temp = clone($orig->{$i}, $linklist);
-				$subfail = $temp[1];
+		 	else
+		 	{
+				($cloned->{$i}, $subfail) = clone($orig->{$i}, $linklist);
 				last if ($subfail);
-				%$cloned = (%$cloned, $i, $temp[0]);
 			}
 		}
 	}
