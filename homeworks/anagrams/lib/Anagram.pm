@@ -41,17 +41,13 @@ anagram(['пятак', 'ЛиСток', 'пятка', 'стул', 'ПяТаК', '
 use utf8;
 use Encode qw(decode_utf8 encode_utf8);
 
-#my @arr = split " ", $ARGV[0];
-#use DDP;
-#p @arr;
-#p anagram(\@arr);
-
 sub anagram {
     my $words_list = shift;
     my %result;
     #    
     # Поиск анограмм map {encode_utf8(lc decode_utf8($_))}
    	my %temphash;
+   	my @temparr;
    	for my $i (@$words_list){
    		my $word = encode_utf8(lc decode_utf8($i));
    		if ($temphash{length($word)}{$word}){
@@ -59,32 +55,24 @@ sub anagram {
    		}
    		else
    		{
-   			$temphash{length($word)}{$word}++;
-   		}
-   		unless($result{$word}){
-   			my $success = 0;
-   			for my $k (keys %{$temphash{length($word)}}){
-   				unless($result{$k}){
-   					next;
-   				}
-   				if(length($k) == length($word) && ((join "", sort split "", $k) eq (join "", sort split "", $word))){
-   					push @{$result{$k}}, $word;
-   					$success = 1;
-   				}
-   			}
-   			unless ($success){
-   				$result{$word} = [];
-   				push @{$result{$word}}, $word;
-   			}
+   			push @temparr, $word;
+   			$temphash{length($word)}{$word} = join "", sort split "", $word;
    		}
    	}
-   	for my $k (keys %result){
-   		unless($#{$result{$k}}){
-   			delete $result{$k};
+   	for my $word (@temparr){
+   		next unless ($temphash{length($word)}{$word});
+   		for my $k (keys %{$temphash{length($word)}}){
+   			if ($temphash{length($word)}{$word} eq $temphash{length($word)}{$k}){
+   				push @{$result{$word}}, $k;
+   				delete $temphash{length($word)}{$k} unless $word eq $k;
+   			}
+   		}
+   		unless($#{$result{$word}}){
+   			delete $result{$word};
    		}
    		else
    		{
-   			@{$result{$k}} = sort @{$result{$k}};
+   			@{$result{$word}} = sort @{$result{$word}};
    		}
    	}
 
