@@ -81,7 +81,7 @@ sub clone {
 			}
 		}
 	}
-	elsif(ref \$orig eq "SCALAR")
+	elsif(!ref $orig)
 	{
 		$cloned = $orig;
 	}
