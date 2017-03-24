@@ -77,7 +77,7 @@ sub parse_file {
 sub report {
     my $result = shift;
     my @codes = (200, 301, 302, 400, 403, 404, 408, 414, 499, 500);
-    print "IP\tcount\tavg\tdata\t"; #200\t301\t302\t400\t403\t404\t408\t414\t499\t500\n";
+    print "IP\tcount\tavg\tdata\t";
     print join "\t", @codes;
     print "\n";
     my $avg = $result->{total}{count} / (scalar keys %{$result->{total}{count_min}});
