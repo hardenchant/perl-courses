@@ -33,7 +33,6 @@ sub parse_file {
                 $result->{total}{data} += ($+{data} * $+{koeff});
             }
         }
-        #my $timestamp = $+{year}.$+{month}.$+{hour}.$+{min};
         $result->{total}{count}++;
         $result->{total}{codes}{$+{code}} += $+{data};
         $result->{total}{count_min}{$+{timestamp}}++;
