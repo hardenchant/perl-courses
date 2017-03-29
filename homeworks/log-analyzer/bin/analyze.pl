@@ -27,7 +27,7 @@ sub parse_file {
 
     my $result;
     while (my $log_line = <$fd>) {
-        $log_line =~ /^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"/;
+        $log_line =~ /^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"\s$/;
         if ($+{code} == 200){
             if ($+{koeff} eq "-"){
                 $result->{foreach}{$+{ipaddr}}{data} += $+{data};
@@ -103,7 +103,13 @@ sub report {
         print (int $result->{foreach}{$el}{data}/1024);
         for my $code (@codes){
             print "\t";
-            print  (int $result->{foreach}{$el}{codes}{$code}/1024) || print "0"; 
+            if ($result->{foreach}{$el}{codes}{$code}){
+                print  (int $result->{foreach}{$el}{codes}{$code}/1024);    
+            }
+            else
+            {
+                print "0"; 
+            }
         }
         print "\n";
     }
