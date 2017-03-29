@@ -17,9 +17,15 @@ sub parse_file {
     my $file = shift;
 
     # you can put your code here
+    
+    my $fd;
+    if ($file =~ /\.bz2$/) {
+        open $fd, "-|", "bunzip2 < $file" or die "Can't open '$file' via bunzip2: $!";
+    } else {
+        open $fd, "<", $file or die "Can't open '$file': $!";
+    }
 
     my $result;
-    open my $fd, "-|", "bunzip2 < $file" or die "Can't open '$file': $!";
     while (my $log_line = <$fd>) {
         $log_line =~ /^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"/;
         if ($+{code} == 200){
@@ -30,7 +36,7 @@ sub parse_file {
             else
             {
                 $result->{foreach}{$+{ipaddr}}{data} += ($+{data} * $+{koeff}); 
-                $result->{total}{data} += ($+{data} * $+{koeff});
+                $result->{total}{data} += $+{data} * $+{koeff};
             }
         }
         $result->{total}{count}++;
@@ -76,7 +82,7 @@ sub parse_file {
 
 sub report {
     my $result = shift;
-    my @codes = (200, 301, 302, 400, 403, 404, 408, 414, 499, 500);
+    my @codes = sort keys %{$result->{total}{codes}};
     print "IP\tcount\tavg\tdata\t";
     print join "\t", @codes;
     print "\n";
@@ -85,13 +91,7 @@ sub report {
     print "total\t$result->{total}{count}\t$avg\t".(int $result->{total}{data}/1024);
     for my $code (@codes){
         print "\t";
-        if(exists $result->{total}{codes}{$code}){
-            print (int $result->{total}{codes}{$code}/1024);
-        }
-        else
-        {
-            print "0";
-        }
+        print (int $result->{total}{codes}{$code}/1024) || print "0";
     }
     print "\n";
     for my $el (@{$result->{top}}){
@@ -103,13 +103,7 @@ sub report {
         print (int $result->{foreach}{$el}{data}/1024);
         for my $code (@codes){
             print "\t";
-            if (exists $result->{foreach}{$el}{codes}{$code}){
-                print  (int $result->{foreach}{$el}{codes}{$code}/1024);
-            }
-            else
-            {
-                print "0";
-            }
+            print  (int $result->{foreach}{$el}{codes}{$code}/1024) || print "0"; 
         }
         print "\n";
     }
