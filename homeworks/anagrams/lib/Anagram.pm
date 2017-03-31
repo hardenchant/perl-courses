@@ -45,28 +45,23 @@ sub anagram {
     my %result;
     #    
     # Поиск анограмм map {encode_utf8(lc decode_utf8($_))}
-   	my %temphash;
-   	for my $i (@$words_list){
-   		my $word = encode_utf8(lc decode_utf8($i));
-   		my $keyword = join "", sort split "", $word;
-   		if ($temphash{length($word)}{$keyword}{words}{$word}){
-   			next;
-   		}
-   		else
-   		{
-   			$temphash{length($word)}{$keyword}{words}{$word}++;
-   			unless ($temphash{length($word)}{$keyword}{first}){
-   				$temphash{length($word)}{$keyword}{first} = $word;
-   			}
-   		}
-   	}
-   	for my $len (keys %temphash){
-   		for my $keyword (keys %{$temphash{$len}}){
-   			if( scalar keys %{$temphash{$len}{$keyword}{words}} > 1){
-   				$result{$temphash{$len}{$keyword}{first}} = [sort keys %{$temphash{$len}{$keyword}{words}}];
-   			}
-   		}
-   	}
+    my %temp;
+    my %first_words;
+
+    for my $i (@$words_list){
+      my $word = encode_utf8(lc decode_utf8($i));
+      my $keyword = join "", sort split "", $word;
+      next if ($temp{$keyword}{$word})
+        
+      $temp{$keyword}{$word}++;
+      $first_words{$keyword} = $word unless $first_words{$keyword};
+    }
+    
+    for my $keyword (keys %first_words){
+      next if (scalar keys %{$temp{$keyword}} == 1);
+      $result{$first_words{$keyword}} = [sort keys %{$temp{$keyword}}];
+    }
+
 
     return \%result;
 }
