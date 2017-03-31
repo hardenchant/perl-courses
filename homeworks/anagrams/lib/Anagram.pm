@@ -50,7 +50,6 @@ sub anagram {
     for my $i (@$words_list){
       my $word = lc decode_utf8($i);
       my $keyword = join "", sort split "", $word;
-      next if ($temp{$keyword}{$word});        
       $temp{$keyword}{$word}++;
       $first_words{$keyword} = $word unless $first_words{$keyword};
     }
