@@ -51,12 +51,10 @@ sub anagram {
     for my $i (@$words_list){
       my $word = encode_utf8(lc decode_utf8($i));
       my $keyword = join "", sort split "", $word;
-      next if ($temp{$keyword}{$word})
-        
+      next if ($temp{$keyword}{$word});        
       $temp{$keyword}{$word}++;
       $first_words{$keyword} = $word unless $first_words{$keyword};
     }
-    
     for my $keyword (keys %first_words){
       next if (scalar keys %{$temp{$keyword}} == 1);
       $result{$first_words{$keyword}} = [sort keys %{$temp{$keyword}}];
