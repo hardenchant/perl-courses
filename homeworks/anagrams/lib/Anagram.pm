@@ -38,18 +38,17 @@ anagram(['пятак', 'ЛиСток', 'пятка', 'стул', 'ПяТаК', '
 }
 
 =cut
-use utf8;
 use Encode qw(decode_utf8 encode_utf8);
 sub anagram {
     my $words_list = shift;
     my %result;
     #    
-    # Поиск анограмм map {encode_utf8(lc decode_utf8($_))}
+    # Поиск анограмм 
     my %temp;
     my %first_words;
 
     for my $i (@$words_list){
-      my $word = encode_utf8(lc decode_utf8($i));
+      my $word = lc decode_utf8($i);
       my $keyword = join "", sort split "", $word;
       next if ($temp{$keyword}{$word});        
       $temp{$keyword}{$word}++;
@@ -57,7 +56,7 @@ sub anagram {
     }
     for my $keyword (keys %first_words){
       next if (scalar keys %{$temp{$keyword}} == 1);
-      $result{$first_words{$keyword}} = [sort keys %{$temp{$keyword}}];
+      $result{encode_utf8 $first_words{$keyword}} = [sort map { encode_utf8 $_ } keys %{$temp{$keyword}}];
     }
 
 
