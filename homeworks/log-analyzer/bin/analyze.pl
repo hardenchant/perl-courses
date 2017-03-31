@@ -29,46 +29,44 @@ sub parse_file {
     while (my $log_line = <$fd>) {
         $log_line =~ /^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"\s$/;
         if ($+{code} == 200){
-            if ($+{koeff} eq "-"){
-                $result->{foreach}{$+{ipaddr}}{data} += $+{data};
-                $result->{total}{data} += $+{data};
-            }
-            else
-            {
-                $result->{foreach}{$+{ipaddr}}{data} += ($+{data} * $+{koeff}); 
-                $result->{total}{data} += $+{data} * $+{koeff};
-            }
+            $result->{foreach}{$+{ipaddr}}{data} += int $+{data} * ($+{koeff} eq  "-" ? 1 : $+{koeff}); 
         }
-        $result->{total}{count}++;
-        $result->{total}{codes}{$+{code}} += $+{data};
-        $result->{total}{count_min}{$+{timestamp}}++;
         $result->{foreach}{$+{ipaddr}}{count_requests}++;
         $result->{foreach}{$+{ipaddr}}{codes}{$+{code}} += $+{data};
-        $result->{foreach}{$+{ipaddr}}{count_min}{$+{timestamp}}++; #keys timestamp == min count
-        #работа с топом
-        my %hash;
+        $result->{foreach}{$+{ipaddr}}{count_min}{$+{timestamp}}++;
+    }
+
+    for my $ipaddr (keys %{$result->{foreach}}){
+    	#total
+    	$result->{total}{data} += $result->{foreach}{$ipaddr}{data} if ($result->{foreach}{$ipaddr}{data});
+    	$result->{total}{count} += $result->{foreach}{$ipaddr}{count_requests};
+        $result->{total}{count_min} += scalar keys %{$result->{foreach}{$ipaddr}{count_min}};
+    	for my $code (keys %{$result->{foreach}{$ipaddr}{codes}}){
+        	$result->{total}{codes}{$code} += $result->{foreach}{$ipaddr}{codes}{$code};
+    	}
+        
+        #top
+    	my %hash;
         for my $el (@{$result->{top}}){
             $hash{$el}++;
         }
-        unless(exists $hash{$+{ipaddr}}){   #если элемент не в топе
+        unless(exists $hash{$ipaddr}){   #если элемент не в топе
             @{$result->{top}} = reverse sort { #посортируем топ
                         $result->{foreach}{$a}{count_requests} <=> $result->{foreach}{$b}{count_requests}
                         } @{$result->{top}};    
-
             if (exists $result->{top}[9]){  #если топ забит то сравниваем с наименьшим
-                if ($result->{foreach}{$+{ipaddr}}{count_requests} > $result->{foreach}{$result->{top}[9]}{count_requests}){
-                    $result->{top}[9] = $+{ipaddr};
+                if ($result->{foreach}{$ipaddr}{count_requests} > $result->{foreach}{$result->{top}[9]}{count_requests}){
+                    $result->{top}[9] = $ipaddr;
                 }
             }
             else    #топ не забит, просто добавляем
             {    
-                push @{$result->{top}}, $+{ipaddr};
+                push @{$result->{top}}, $ipaddr;
             }
-        }
-    
-        # you can put your code here
-        # $log_line contains line from log file
+        }	
     }
+
+
     @{$result->{top}} = reverse sort { #посортируем топ, вдруг что изменилось
                         $result->{foreach}{$a}{count_requests} <=> $result->{foreach}{$b}{count_requests}
                         } @{$result->{top}};    
@@ -86,12 +84,11 @@ sub report {
     print "IP\tcount\tavg\tdata\t";
     print join "\t", @codes;
     print "\n";
-    my $avg = $result->{total}{count} / (scalar keys %{$result->{total}{count_min}});
+    my $avg = $result->{total}{count} / $result->{total}{count_min};
     $avg = sprintf("%.2f", $avg);
     print "total\t$result->{total}{count}\t$avg\t".(int $result->{total}{data}/1024);
     for my $code (@codes){
-        print "\t";
-        print (int $result->{total}{codes}{$code}/1024) || print "0";
+        print "\t".(int $result->{total}{codes}{$code}/1024);
     }
     print "\n";
     for my $el (@{$result->{top}}){
@@ -103,13 +100,7 @@ sub report {
         print (int $result->{foreach}{$el}{data}/1024);
         for my $code (@codes){
             print "\t";
-            if ($result->{foreach}{$el}{codes}{$code}){
-                print  (int $result->{foreach}{$el}{codes}{$code}/1024);    
-            }
-            else
-            {
-                print "0"; 
-            }
+            print $result->{foreach}{$el}{codes}{$code} ? (int $result->{foreach}{$el}{codes}{$code}/1024) : 0;
         }
         print "\n";
     }
