@@ -27,20 +27,20 @@ sub parse_file {
 
     my $result;
     while (my $log_line = <$fd>) {
-        $log_line =~ /^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"\s$/;
+        next unless ($log_line =~ m/^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"\s$/);
         if ($+{code} == 200){
             $result->{foreach}{$+{ipaddr}}{data} += int $+{data} * ($+{koeff} eq  "-" ? 1 : $+{koeff}); 
         }
         $result->{foreach}{$+{ipaddr}}{count_requests}++;
         $result->{foreach}{$+{ipaddr}}{codes}{$+{code}} += $+{data};
         $result->{foreach}{$+{ipaddr}}{count_min}{$+{timestamp}}++;
+        $result->{total}{count_min}{$+{timestamp}}++;
     }
 
     for my $ipaddr (keys %{$result->{foreach}}){
     	#total
     	$result->{total}{data} += $result->{foreach}{$ipaddr}{data} if ($result->{foreach}{$ipaddr}{data});
     	$result->{total}{count} += $result->{foreach}{$ipaddr}{count_requests};
-        $result->{total}{count_min} += scalar keys %{$result->{foreach}{$ipaddr}{count_min}};
     	for my $code (keys %{$result->{foreach}{$ipaddr}{codes}}){
         	$result->{total}{codes}{$code} += $result->{foreach}{$ipaddr}{codes}{$code};
     	}
@@ -71,6 +71,7 @@ sub parse_file {
                         $result->{foreach}{$a}{count_requests} <=> $result->{foreach}{$b}{count_requests}
                         } @{$result->{top}};    
         
+
     close $fd;
 
     # you can put your code here
@@ -84,7 +85,7 @@ sub report {
     print "IP\tcount\tavg\tdata\t";
     print join "\t", @codes;
     print "\n";
-    my $avg = $result->{total}{count} / $result->{total}{count_min};
+    my $avg = $result->{total}{count} / scalar keys %{$result->{total}{count_min}};
     $avg = sprintf("%.2f", $avg);
     print "total\t$result->{total}{count}\t$avg\t".(int $result->{total}{data}/1024);
     for my $code (@codes){
