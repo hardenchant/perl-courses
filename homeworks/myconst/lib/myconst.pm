@@ -40,38 +40,31 @@ print PI;               # 3.14
 sub import{
 	no strict 'refs';
 	shift;
-	my $EX_OK = '';
-	my $EX_TAGS = ''; 
+	my %EX_TAGS;
 	my $package_name = caller;
 	while(@_){
 		die "invalid args checked" if($#_ < 1);
 		if (ref $_[1] eq "HASH"){
 			my ($tag_name, $hash) = (shift, shift);
-			$EX_TAGS = $EX_TAGS."$tag_name => [qw/";
 			for my $const_name (keys %$hash){
-				die "invalid args checked" unless (!ref $hash->{$const_name} && $const_name =~ m/^(?:[a-zA-Z_](?:[a-zA-Z_0-9])+|[a-zA-Z])$/);
+				die "invalid args checked" unless (!ref $hash->{$const_name} && $const_name =~ m/^(?:(?:[a-zA-Z_](?:[a-zA-Z_0-9])+)|[a-zA-Z])$/);
 				*{"$package_name::$const_name"} = sub() {return $hash->{$const_name};};
-				$EX_OK = $EX_OK."$const_name ";
-				$EX_TAGS = $EX_TAGS."$const_name ";
+				push @{$EX_TAGS{all}}, $const_name;
+				push @{$EX_TAGS{$tag_name}}, $const_name;
 			}
-			$EX_TAGS = $EX_TAGS."/],";
 		}
 		elsif(!ref $_[1]){
 			my ($const_name, $const_value) = (shift, shift);
-			die "invalid args checked" unless ($const_name && $const_name =~ m/^[a-zA-Z_](?:[a-zA-Z_0-9])+$/);
+			die "invalid args checked" unless ($const_name && $const_name =~ m/^(?:(?:[a-zA-Z_](?:[a-zA-Z_0-9])+)|[a-zA-Z])$/);
 			*{"$package_name::$const_name"} = sub() {return $const_value;};
-			$EX_OK = $EX_OK."$const_name ";
-		}
+			push @{$EX_TAGS{all}}, $const_name;		}
 		else{
 			die "invalid args checked";
 		}
 	}
-
-	eval "package $package_name;
-		  use Exporter qw/import/;
-		  our \@EXPORT_OK = qw/$EX_OK/;
-		  our \%EXPORT_TAGS = ( 
-		  					all => [qw/$EX_OK/], $EX_TAGS)";
+	eval "package $package_name; use Exporter qw/import/;";
+	*{"$package_name\:\:EXPORT_OK"} = \@{$EX_TAGS{all}}; 
+	*{"$package_name\:\:EXPORT_TAGS"} =  \%EX_TAGS;
 }
 
 
