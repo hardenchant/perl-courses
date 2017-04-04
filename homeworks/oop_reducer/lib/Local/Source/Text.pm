@@ -1,20 +1,29 @@
-package Local::Source::Array;
+package Local::Source::Text;
 use strict;
 use warnings;
 use Mouse;
 
 with qw/Local::Source/;
 
-has 'array' => (
+has 'text' => (
 	is => 'rw',
 	required => 1
 	);
 
+has 'delimiter' => (
+	is => 'rw',
+	default => "\n"
+	);
+
+has 'array' => (
+	is => 'rw'
+	);
+
 sub BUILD(){
 	my $self = shift;
-	my @arr = @{$self->{array}};
-	$self->{array} = \@arr;
-} 
+	my @array = split "$self->{delimiter}", $self->{text};
+	$self->{array} = \@array;
+}
 
 sub next {
 	my $self = shift;

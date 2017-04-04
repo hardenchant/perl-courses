@@ -33,9 +33,6 @@ has 'initial_value' => (
 	is => 'rw',
 	required => 1
 	);
-has 'reduced' => (
-	is => 'rw',
-	);
 
 requires qw/reduce_n reduce_all reduced/;
 

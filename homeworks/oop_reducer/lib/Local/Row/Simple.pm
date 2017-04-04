@@ -1,18 +1,23 @@
 package Local::Row::Simple;
 use strict;
 use warnings;
-use Mouse;
 
-with qw/Local::Row/;
+sub new {
+	my $class = shift;
+	my $self = bless {}, $class;
+	unless ($_[1] =~ m/(?:^\w+:\w+)(?:,\w+:\w+)*$|^$/){
+		return undef;
+	}
+	my @arr = split ",", $_[1];
+	for my $str (@arr){
+		%{$self} = (%{$self}, split ":", $str);
+	}
+	return $self;
+}
 
 sub get {
 	my ($self, $name, $default) = (shift, shift, shift);
-	my @arr = split ",", $self->{str};
-	my %hash;
-	for my $str (@arr){
-		%hash = (%hash, split ":", $str);
-	}
-	return $hash{$name} if ($hash{$name});
+	return $self->{$name} if ($self->{$name});
 	return $default; 	
 }
 
