@@ -62,9 +62,10 @@ sub import{
 			die "invalid args checked";
 		}
 	}
-	eval "package $package_name; use Exporter qw/import/;";
-	*{"$package_name\:\:EXPORT_OK"} = \@{$EX_TAGS{all}}; 
-	*{"$package_name\:\:EXPORT_TAGS"} =  \%EX_TAGS;
+	require Exporter;
+	push @{"$package_name\:\:ISA"}, qw/Exporter/;
+	push @{"$package_name\:\:EXPORT_OK"}, @{$EX_TAGS{all}};
+	%{"$package_name\:\:EXPORT_TAGS"} = (%{"$package_name\:\:EXPORT_TAGS"}, %EX_TAGS);
 }
 
 
