@@ -21,14 +21,14 @@ has 'array' => (
 
 sub BUILD(){
 	my $self = shift;
-	my @array = split "$self->{delimiter}", $self->{text};
-	$self->{array} = \@array;
+	my @array = split $self->delimiter, $self->text;
+	$self->array(\@array);
 }
 
 sub next {
 	my $self = shift;
-	return undef unless ($#{$self->{array}} + 1);
-	return shift @{$self->{array}};
+	return undef unless (@{$self->array});
+	return shift @{$self->array};
 }
 
 1;

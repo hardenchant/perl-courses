@@ -11,40 +11,40 @@ has 'field' => (
 	required => 1
 	);
 
-has 'reduced' => (
+has 'result' => (
 	is => 'rw',
 	default => 0
 	);
 
+sub _reduce	{
+	my $self = shift;
+	my $line = $self->source->next();
+	return 0 unless ($line); #if strings ended
+	my $obj_str = $self->row_class->new(str => $line);
+	return -1 unless ($obj_str); #if wrong formmat
+	my $number = $obj_str->get($self->field, "0");
+	return -1 unless looks_like_number($number); # if not a number
+	$self->result($self->result + $number);
+	return 1;
+}
+
 sub reduce_n {
 	my ($self, $n) = (shift, shift);
 	for my $count (1..$n){
-		my $line = $self->{source}->next();
-		last unless ($line); #end if line undef
-		my $obj_str = $self->{row_class}->new(str => $line);
-		next unless ($obj_str);
-		$obj_str = $obj_str->get($self->{field}, "0");
-		next unless looks_like_number($obj_str); #ignore if not a number
-		$self->{reduced} +=	$obj_str;			
+		last unless($self->_reduce());			
 	}
-	return $self->{reduced}; 
+	return $self->result(); 
 }
 
 sub reduce_all {
 	my $self = shift;
-	while (my $line = $self->{source}->next()){
-		my $obj_str = $self->{row_class}->new(str => $line);
-		next unless ($obj_str);
-		$obj_str = $obj_str->get($self->{field}, "0");
-		next unless looks_like_number($obj_str); #ignore if not a number
-		$self->{reduced} +=	$obj_str;			
-	}
-	return $self->{reduced};
+	while ($self->_reduce()){}
+	return $self->result;
 }
 
 sub reduced {
 	my $self = shift;
-	return $self->{reduced};	
+	return $self->result;	
 }
 
 1;

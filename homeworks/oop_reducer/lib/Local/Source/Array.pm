@@ -12,14 +12,14 @@ has 'array' => (
 
 sub BUILD(){
 	my $self = shift;
-	my @arr = @{$self->{array}};
-	$self->{array} = \@arr;
+	my @arr = @{$self->array()};
+	$self->array(\@arr);
 } 
 
 sub next {
 	my $self = shift;
-	return undef unless ($#{$self->{array}} + 1);
-	return shift @{$self->{array}};
+	return undef unless (@{$self->array});
+	return shift @{$self->array};
 }
 
 1;
