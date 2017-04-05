@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Regexp::Common qw /URI/;
 our $VERSION = 1.0;
 
 
@@ -27,7 +28,7 @@ sub parse_file {
 
     my $result;
     while (my $log_line = <$fd>) {
-        next unless ($log_line =~ m/^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] ".*" (?<code>\d{3}) (?<data>\d+) ".*" ".*" "(?<koeff>.*)"\s$/);
+        next unless ($log_line =~ m/^(?<ipaddr>(?:\d{1,3}\.){3}\d{1,3}) \[(?<timestamp>.{17}).{9}\] "(?:[^"])+" (?<code>\d{3}) (?<data>\d+) "(?:[^"])+" "(?:[^"])+" "(?<koeff>(?:\d|\.)*|-)"\s$/);
         if ($+{code} == 200){
             $result->{foreach}{$+{ipaddr}}{data} += int $+{data} * ($+{koeff} eq  "-" ? 1 : $+{koeff}); 
         }
