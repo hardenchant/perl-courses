@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use Regexp::Common qw /URI/;
 our $VERSION = 1.0;
 
 
