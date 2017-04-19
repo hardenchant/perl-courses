@@ -1,0 +1,16 @@
+<!-- Создание заметки -->
+<div class="b-note-creation b-block">
+    <h1>Create note</h1>
+    <form action="note" method="post" onsubmit="document.getElementById('note_submit').disable=true; document.getElementById('note_submit').value='Oh, wait'">
+        <p><input type="title" name="title" placeholder="Title" /></p>
+        <p><textarea name="text" placeholder="Note text"></textarea></p>
+        <p><textarea name="users" placeholder="Users"></textarea></p>
+        <p><input type="submit" value="Create" id="note_submit"/></p>
+    </form>
+</div>
+
+<div>
+    <form action="logout" method="get">
+        <p><input type="submit" value="Logout"/></p>
+    </form>
+</div>

@@ -1,0 +1,18 @@
+<!-- Авторизация -->
+<div class="b-auth b-block">
+	<h1>Auth</h1>
+	<form action="auth" method="post" id = "auth_form" onsubmit="document.getElementById('auth_submit').disable=true; document.getElementById('auth_submit').value='Oh, wait';">
+		<p><input type="text" name="username" placeholder="username""/></p>
+		<p><input type="password" name="password" placeholder="password" /></p>
+		<p><input type="submit" value="Login" id="auth_submit"/></p>
+	</form>
+</div>
+<!-- Registration -->
+<div class="b-register b-block">
+	<h1>Register</h1>
+	<form action="reg" method="post" id = "auth_form" onsubmit="document.getElementById('reg_submit').disable=true; document.getElementById('reg_submit').value='Oh, wait';">
+		<p><input type="text" name="new_username" placeholder="username""/></p>
+		<p><input type="password" name="new_password" placeholder="password" /></p>
+		<p><input type="submit" value="Register" id="reg_submit"/></p>
+	</form>
+</div>
