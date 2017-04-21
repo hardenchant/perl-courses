@@ -36,21 +36,22 @@ get '/logout' => sub {
 
 get qr{^/([a-f0-9]{16})$} => sub {
 	my $note = Local::Note->pull(splat);
+	
+	my $user = encode_entities(session('user'),'<>&"');
 	if($note){
-	unless($note->user eq session('user')){
-		response->status(404);
-		my $user = encode_entities(session('user'),'<>&"');
-		template 'index' => {'notes' => [],
-							 'title' => $user,
-							  'errors' => ['You have not permission'],
-							  'username' => $user
-							};
-	}
-	else
-	{
-		$note->prepare_to_watch();
-		template 'note' => {'title' => $note->title, 'note' => $note};
-	}
+		unless($note->user eq session('user')){
+			response->status(404);
+			template 'index' => {'notes' => [],
+								 'title' => $user,
+								  'errors' => ['You have not permission'],
+								  'username' => $user
+								};
+		}
+		else
+		{
+			$note->prepare_to_watch();
+			template 'note' => {'title' => $note->title, 'note' => $note};
+		}
 	}
 	else
 	{
