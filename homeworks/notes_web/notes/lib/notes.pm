@@ -5,6 +5,7 @@ use Dancer2::Plugin::Database;
 use Digest::CRC 'crc64';
 use Local::Note;
 use Local::User;
+use HTML::Entities;
 
 our $VERSION = '0.1';
 
@@ -16,9 +17,12 @@ hook 'before' => sub {
 };
 
 get '/' => sub {
-	#my $notes = Local::User->new(username => session('user'))->get_notes();
-
-	template 'index' => { 'title' => "Notes - ".session('user'), 'username' => session('user')};#, 'notes' => $notes };
+	my $notes = Local::User->new(username => session('user'))->get_notes();
+	$_->prepare_to_watch() for @$notes;	
+	my $user = encode_entities(session('user'), '<>&"');
+	template 'index' => { 'title' => "Notes - ".$user,
+						  'username' => $user,
+						  'notes' => $notes };
 };
 
 get '/auth' => sub {
@@ -32,8 +36,30 @@ get '/logout' => sub {
 
 get qr{^/([a-f0-9]{16})$} => sub {
 	my $note = Local::Note->pull(splat);
-	template 'note' => {'title' => $note->title, 'note' => $note};
-	#return "<h1>".$note->title()."</h1>\n".$note->note()."<br>".$note->shared_users() if $note;
+	if($note){
+	unless($note->user eq session('user')){
+		response->status(404);
+		my $user = encode_entities(session('user'),'<>&"');
+		template 'index' => {'notes' => [],
+							 'title' => $user,
+							  'errors' => ['You have not permission'],
+							  'username' => $user
+							};
+	}
+	else
+	{
+		$note->prepare_to_watch();
+		template 'note' => {'title' => $note->title, 'note' => $note};
+	}
+	}
+	else
+	{
+		template 'index' => {'notes' => [],
+							 'title' => $user,
+							  'errors' => ['Note not found'],
+							  'username' => $user
+							};	
+	}
 };
 
 post '/auth' => sub {
@@ -51,14 +77,23 @@ post '/auth' => sub {
 
 post '/reg' => sub {
 	#checking
-	my $user = Local::User->new(username => params->{new_username}, password => params->{new_password});
-	if ($user->registration()){
-		session 'user' => $user->{username};
-		redirect '/';	
+	my @errors;
+	push @errors, "Bad username (a-z0-9_)" unless (params->{new_username} =~ m/^[a-zA-Z0-9_]+$/); 
+	push @errors, "Bad password (a-zA-Z0-9)" unless (params->{new_password} =~ m/^[a-zA-Z0-9]+$/);
+	if (@errors){
+		template 'auth' => { 'title' => "Auth", "errors" => \@errors };
 	}
 	else
 	{
-		template 'auth' => { 'title' => "Auth", "errors" => ["This user already exists"] }; 
+		my $user = Local::User->new(username => params->{new_username}, password => params->{new_password});
+		if ($user->registration()){
+			session 'user' => $user->{username};
+			redirect '/';	
+		}
+		else
+		{
+			template 'auth' => { 'title' => "Auth", "errors" => ["User already exists"] }; 
+		}
 	}
 };
 
