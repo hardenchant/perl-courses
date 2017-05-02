@@ -1,0 +1,8 @@
+---
+Database:
+    driver: mysql
+    database: social_network
+    host: localhost
+    port: 3306
+    username: sn
+    password: socnet
