@@ -5,7 +5,8 @@ CREATE TABLE notes (
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user VARCHAR(30) NOT NULL,
     note VARCHAR(255) NOT NULL,
-    title VARCHAR(30) NOT NULL DEFAULT NOW()
+    title VARCHAR(30)ls
+    #dopilit'
 );
 
 COMMIT;
