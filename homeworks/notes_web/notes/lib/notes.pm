@@ -9,7 +9,7 @@ use HTML::Entities;
 
 our $VERSION = '0.1';
 
-
+#if not auth redirect to auth 
 hook 'before' => sub {
 	if (!session('user') && request->path_info !~ m{^/(?:auth|reg)}){
 		redirect '/auth';
@@ -39,7 +39,7 @@ get qr{^/([a-f0-9]{16})$} => sub {
 	
 	my $user = encode_entities(session('user'),'<>&"');
 	if($note){
-		unless($note->user eq session('user')){
+		unless($note->user eq session('user') || $note->shared_users_hash->{session('user')}){
 			response->status(404);
 			template 'index' => {'notes' => [],
 								 'title' => $user,
@@ -100,7 +100,7 @@ post '/reg' => sub {
 
 post '/note' => sub {
 	my $note_id = Local::Note->new({title => params->{title}, 
-									users => params->{users}, 
+									shared_users => params->{shared_users}, 
 									text => params->{text}, 
 									user => session('user')});
 	return unless $note_id; 

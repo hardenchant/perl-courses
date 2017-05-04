@@ -8,7 +8,7 @@ use Mouse;
 use HTML::Entities;
 
 
-has [qw/user text title shared_users create_time id hex_id/] => (
+has [qw/user text title shared_users shared_users_hash create_time id hex_id/] => (
 	is => 'rw'
 	);
 
@@ -47,6 +47,10 @@ sub BUILD {
 	$self->create_time // $self->create_time(time());
 	$self->id // $self->id(crc64($self->{text}.$self->{create_time}.$self->{user}));
 	$self->hex_id // $self->hex_id(unpack 'H*', pack 'Q', $self->id);
+	$self->shared_users_hash({});
+	for my $user (split ";", $self->shared_users){
+		$self->shared_users_hash->{$user}++;	
+	}
 }
 
 sub commit {
@@ -54,7 +58,7 @@ sub commit {
 	my $zap = database->prepare(insert_request());
 	my $zap_whitelist = database->prepare(white_list_insert_request());
 	return undef unless $zap->execute($self->id, $self->create_time, $self->user, $self->title, $self->text);
-	for my $user (@{$self->{shared_users}}){
+	for my $user (keys %{$self->shared_users_hash}){
 		$zap_whitelist->execute($self->id, $user);
 		#раскрутить обратно в случае ошибки
 	}
@@ -77,8 +81,9 @@ sub pull {
 	my $zap_whitelist = database->prepare(white_list_select_request());
 	return $self unless $zap_whitelist->execute($id);
 	while(my $user = $zap_whitelist->fetchrow_hashref()){
-		push @{$self->{shared_users}}, $user->{user};
+		$self->shared_users_hash->{$user->{user}}++;
 	}
+	$self->shared_users(join ";", keys %{$self->shared_users_hash});
 	return $self;
 }
 
@@ -98,8 +103,9 @@ sub pull_notes_by_user {
 		push @$result, $self;
 		next unless $zap_whitelist->execute($note->{id});
 		while(my $user = $zap_whitelist->fetchrow_hashref()){
-			push @{$self->{shared_users}}, $user->{user};
+			$self->shared_users_hash->{$user}++;
 		}
+		$self->shared_users(join ";", keys %{$self->shared_users_hash})
 	}
 	return $result;
 }

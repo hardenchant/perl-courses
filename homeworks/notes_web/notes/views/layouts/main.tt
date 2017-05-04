@@ -26,7 +26,7 @@
 			<% END %>
 			<ul id="sidebar-items">
 				<% FOR note IN notes %>
-					<ul><a href="/<% note.hex_id %>"><% note.title %></a>
+					<ul><a href="/<% note.hex_id %>"><% IF note.title %><% note.title %><% ELSE %><Без заголовка><% END %></a>
 					</ul>
 				<% END %>
 			</ul>

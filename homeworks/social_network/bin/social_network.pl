@@ -7,24 +7,22 @@ use FindBin;
 use lib $FindBin::Bin.'/../lib/';
 use Local::Schema;
 
-
+#load cfg
 my $cfg = LoadFile($FindBin::Bin.'/../config.yaml');
-
+#connect to db
 my $schema = Local::Schema->connect("dbi:$cfg->{Database}{driver}:database=$cfg->{Database}{database};host=$cfg->{Database}{host};port=$cfg->{Database}{port}",
 					   $cfg->{Database}{username},
 					   $cfg->{Database}{password});
 
 my $resultset = $schema->resultset('User');
-my $resultset2 = $resultset->search({id => 60000});
 
-#use DDP; p $resultset2;
-print $resultset2->next->first_name."\n";
+while 
 
 $resultset->create(
 				{
-					id => 60000,
-					first_name => 'СЕРЁГА',
-					last_name => 'CЕРЫЙ',
+					id => ,
+					first_name => ,
+					last_name => ,
 				}
 	);
 

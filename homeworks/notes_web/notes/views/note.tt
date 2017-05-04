@@ -5,6 +5,6 @@
 		<tr><td><br></td></tr>
 		<tr><td><h3><% note.text %></h3></td></tr>
 		<tr><td><br></td></tr>
-		<tr><td><% IF note.shared_users %><% FOR user IN note.shared_users %><br><% user %><% END %><% END %></td></tr>
+		<tr><td><% note.shared_users %></td></tr>
 	</table>
 </div>
