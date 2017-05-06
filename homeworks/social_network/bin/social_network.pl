@@ -1,77 +1,121 @@
 #!/usr/bin/env perl
-
 use strict;
 use warnings;
 use YAML::XS 'LoadFile';
 use FindBin;
 use lib $FindBin::Bin.'/../lib/';
 use Local::Schema;
+use feature 'say';
+use DBI;
 
 #load cfg
 my $cfg = LoadFile($FindBin::Bin.'/../config.yaml');
 #connect to db
-my $schema = Local::Schema->connect("dbi:$cfg->{Database}{driver}:database=$cfg->{Database}{database};host=$cfg->{Database}{host};port=$cfg->{Database}{port}",
+my $dbh = DBI->connect("dbi:$cfg->{Database}{driver}:database=$cfg->{Database}{database};host=$cfg->{Database}{host};port=$cfg->{Database}{port}",
 					   $cfg->{Database}{username},
 					   $cfg->{Database}{password});
 
-my $resultset = $schema->resultset('User');
+sub get_friends_by_id {
+	my $id = shift;
+	my $sth = $dbh->prepare('SELECT relations.friend_id FROM users, relations WHERE users.id=relations.id AND users.id=?');
+	return undef unless $sth->execute($id);
+	my @friends;
+	while (my $friend_id = $sth->fetchrow_hashref()) {
+		push @friends, $friend_id->{friend_id};
+	}
+	return \@friends;
+}
+sub get_our_friends {
+	my ($id1, $id2) = (shift, shift);
+	my $sth = $dbh->prepare('SELECT relations.friend_id FROM users, relations JOIN (SELECT relations.friend_id FROM users, relations WHERE users.id=relations.id AND users.id=?) AS d ON relations.friend_id=d.friend_id WHERE users.id=relations.id AND users.id=?');
+	return undef unless $sth->execute($id1, $id2);
+	my @friends;
+	while (my $friend_id = $sth->fetchrow_hashref()) {
+		push @friends, $friend_id->{friend_id};
+	}
+	return \@friends;	
+}
+sub get_non_friends {
+	my $sth = $dbh->prepare('SELECT u.id FROM users AS u WHERE NOT EXISTS(SELECT * FROM relations WHERE relations.id=u.id)');
+	return undef unless $sth->execute();
+	my @users;
+	while (my $user_id = $sth->fetchrow_hashref()) {
+		push @users, $user_id->{id};
+	}
+	return \@users;	
+}
+sub friends {
+	my ($id1, $id2) = (shift, shift);
+	my $sth = $dbh->prepare('SELECT * FROM users, relations WHERE users.id=relations.id AND users.id=? AND relations.friend_id=?');
+	return 0 unless $sth->execute($id1, $id2);
+	return 1 if $sth->fetchrow_hashref();
+}
+sub find_distance {
+	my ($id1, $id2) = (shift, shift);
+	my $distance = 0;
+	return $distance if friends($id1, $id2);
+	my $sth = $dbh->prepare('SELECT count(*) FROM users');
+	return undef unless $sth->execute();
+	my $max_dist = $sth->fetchrow_hashref()->{'count(*)'};
+	my (@current, @next);
+	@current = @{get_friends_by_id($id1)};
+	while ($distance < $max_dist) {
+		$distance++;
+		for my $user_id (@current) {
+			return $distance if friends($user_id, $id2);
+		}
+		
+	}
+	return undef;
+}
 
-while 
-
-$resultset->create(
-				{
-					id => ,
-					first_name => ,
-					last_name => ,
-				}
-	);
-
-# my $dbh = DBI->connect(
-# 	"DBI:mysql:database=social_network;".
-# 		"host=localhost;port=3306",
-# 		"sn", "socnet");
-# my $sth = $dbh->prepare('INSERT INTO users (id, first_name, last_name) VALUES (?, ?, ?)');
-
-# my $fh;
-# open ($fh, '-|', 'unzip -p '.$FindBin::Bin.'/../etc/user.zip') or die $!;
-# while(my $line = <$fh>){
-# 	my ($id, $first_name, $last_name) = split " ", $line;
-# 	$sth->execute($id, $first_name, $last_name);
-# }
-
-# my $dbh = DBI->connect(
-# 	"DBI:mysql:database=social_network;".
-# 		"host=localhost;port=3306",
-# 		"sn", "socnet");
-# my $sth = $dbh->prepare('INSERT INTO friends_graph (uniq_id) VALUES (?)');
-
-# my $fh;
-# open ($fh, '-|', 'unzip -p '.$FindBin::Bin.'/../etc/user_relation.zip') or die $!;
-# my %hash;
-# while(my $line = <$fh>){
-# 	my ($id1, $id2) = split " ", $line;
-# 	$hash{($id1 < $id2)? $id1.'a'.$id2 : $id2.'a'.$id1}++;
-# }
-# $sth->execute($_) for (keys %hash);
-
-
-# my $dbh = DBI->connect(
-# 	"DBI:mysql:database=social_network;".
-# 		"host=localhost;port=3306",
-# 		"sn", "socnet");
-# my $sth = $dbh->prepare("SELECT uniq_id FROM friends_graph where uniq_id like ? or uniq_id like ?");
-# die "BD" unless $sth->execute("500a%","%a500");
-# my $result1 = $sth->fetchall_hashref("uniq_id");
-# die "BD" unless $sth->execute("900a%","%a900");
-# my $result2 = $sth->fetchall_hashref("uniq_id");
-
-# my @ob;
-
-# for my $uniq_id (keys %$result1){
-	
-# 	if ($result2->{$uniq_id}){
-# 		push
+use DDP; p friends(506, 4147);
+# sub get_friends_by_id {
+# 	my $id = shift;
+# 	my $resultset = $schema->resultset('Relation')->search({id => $id});
+# 	my @friends;
+# 	while (my $friend = $resultset->next) {
+# 		push @friends, $friend->friend_id;
 # 	}
+# 	return \@friends; 
+# }
+# sub get_our_friends {
+# 	my ($id1, $id2) = @_;
+# 	my $friends1 = get_friends_by_id($id1);
+# 	my $friends2 = get_friends_by_id($id2);
+# 	my %our_friends;
+# 	$our_friends{$_}++ for @{$friends1};
+# 	$our_friends{$_}++ for @{$friends2};
+# 	my @result;
+# 	for my $key (keys %our_friends) {
+# 		push @result, $key if $our_friends{$key} > 1;
+# 	}
+# 	return \@result;
+# }
+# sub have_friends {
+# 	my $id = shift;
+# 	my $friends = get_friends_by_id($id);
+# 	return 0 unless (@{$friends});
+# 	1;
+# }
+# sub users_with_no_friends {
+# 	my %users_id;
+# 	my %friend_id;
+# 	my $resultset = $schema->resultset('User');
+
+# 	my @users_with_no_friends;
+# 	while (my $user = $resultset->next) {
+# 		$users_id{$user->id}++;
+# 	}
+# 	$resultset = $schema->resultset('Relation');
+# 	while (my $user = $resultset->next) {
+# 		$friend_id{$user->id}++;
+# 	}
+# 	for my $id (keys %friend_id){
+# 		delete $users_id{$id} if $users_id{$id}; 
+# 	}
+# 	@users_with_no_friends = (keys %users_id); 
+# 	return \@users_with_no_friends;
 # }
 
-# print "\n";
+# say scalar @{users_with_no_friends()};

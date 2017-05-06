@@ -24,11 +24,11 @@ CREATE TABLE `users` (
 -- ---
 
 DROP TABLE IF EXISTS `relations`;
-		
+
 CREATE TABLE `relations` (
   `id` INTEGER NOT NULL,
-  `id_users` INTEGER NOT NULL,
-  `friend_id` INTEGER NOT NULL
+  `friend_id` INTEGER NOT NULL,
+  `uniq_id` INTEGER NOT NULL AUTO_INCREMENT
 );
 
 
