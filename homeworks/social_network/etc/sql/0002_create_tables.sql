@@ -13,10 +13,10 @@
 DROP TABLE IF EXISTS `users`;
 		
 CREATE TABLE `users` (
-  `id` INTEGER NULL NOT NULL,
+  `id` INTEGER NULL NOT NULL PRIMARY KEY,
   `first_name` VARCHAR(30) NOT NULL,
   `last_name` VARCHAR(30) NOT NULL
-);
+) charset utf8;
 
 -- ---
 -- Table 'relations'
@@ -28,16 +28,9 @@ DROP TABLE IF EXISTS `relations`;
 CREATE TABLE `relations` (
   `id` INTEGER NOT NULL,
   `friend_id` INTEGER NOT NULL,
-  `uniq_id` INTEGER NOT NULL AUTO_INCREMENT
+  `uniq_id` INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  INDEX `id` (`id`)
 );
-
-
--- ---
--- Table Properties
--- ---
-
-ALTER TABLE `users` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-ALTER TABLE `relations` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- ---
 -- Test Data
