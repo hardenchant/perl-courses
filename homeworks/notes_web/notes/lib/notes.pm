@@ -2,6 +2,7 @@ package notes;
 use utf8;
 use Dancer2;
 use Dancer2::Plugin::Database;
+use Dancer2::Plugin::CSRF;
 use Digest::CRC 'crc64';
 use Local::Note;
 use Local::User;
@@ -22,7 +23,9 @@ get '/' => sub {
 	my $user = encode_entities(session('user'), '<>&"');
 	template 'index' => { 'title' => "Notes - ".$user,
 						  'username' => $user,
-						  'notes' => $notes };
+						  'notes' => $notes,
+						  'csrf' => get_csrf_token(), 
+						};
 };
 
 get '/auth' => sub {
@@ -99,6 +102,7 @@ post '/reg' => sub {
 };
 
 post '/note' => sub {
+	return "Invalid csrf" unless validate_csrf_token(params->{csrf_token});
 	my $note_id = Local::Note->new({title => params->{title}, 
 									shared_users => params->{shared_users}, 
 									text => params->{text}, 

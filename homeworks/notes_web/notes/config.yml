@@ -66,3 +66,5 @@ plugins:
       AutoCommit: 1
     on_connect_do: ["SET NAMES utf8", "SET CHARSET utf8"]
     log_queries: 1
+  CSRF:
+    session_key_name: 'plugin.csrf'
