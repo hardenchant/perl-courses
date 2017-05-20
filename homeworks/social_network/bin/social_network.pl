@@ -19,7 +19,7 @@ GetOptions ("friends" => \$friends,
 
 my $h = Local::SocialNetwork->new();
 
-if @users {
+if (@users) {
 	$friends = $h->get_our_friends($users[0], $users[1]) if $friends;
 	$num_handshakes = $h->find_distance($users[0], $users[1]) if $num_handshakes;
 }
@@ -41,4 +41,4 @@ if ($nofriends) {
 	}
 	print JSON::XS->new->pretty(1)->utf8(1)->encode($nofriends);
 }
-print $num_handshakes if $num_handshakes;
+print $num_handshakes."\n" if $num_handshakes;
