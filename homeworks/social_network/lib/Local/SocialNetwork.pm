@@ -113,7 +113,7 @@ sub from_id_to_objs {
 	my @result;
 	my $sth = $self->{dbh}->prepare('SELECT * FROM users WHERE id = ?');
 	while (@{$ids}) {
-		$sth->execute(pop @{$ids});
+		return undef unless $sth->execute(pop @{$ids});
 		push @result, $sth->fetchrow_hashref();
 	}
 	return \@result;

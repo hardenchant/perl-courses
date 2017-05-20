@@ -25,37 +25,10 @@ sub mode2s($) {
 	return {mode => {user => $user, group => $group, other => $other}};
 }
 
-my %command_subs = (
-	D => sub {
-		my ($hex_bytes, $last_folder_list) = (shift, shift); 
-		my $N_name = hex (shift @{$hex_bytes}).(shift @{$hex_bytes});
-		my $name;
-		$name .= (shift @{$hex_bytes}) for 1..$N_name;
-		$name = pack "H*", $name;
-		mode2s(shift @{$hex_bytes}).(shift @{$hex_bytes});
-		push @{$last_folder_list}, {type => "directory", name => $name,  list => [], %{mode2s(shift @{$hex_bytes}).(shift @{$hex_bytes})}};
-		1;
-	}, 
-	F => sub {
-		my ($hex_bytes, $last_folder_list) = (shift, shift); 
-		$command_subs{D}($hex_bytes, $last_folder);
-		$last_folder_list->[-1]->{type} = "file";
-		delete $last_folder_list->[-1]->{list};
-		$last_folder_list->[-1]->{size} = hex (shift @{$hex_bytes}).(shift @{$hex_bytes}).(shift @{$hex_bytes}).(shift @{$hex_bytes});
-		my $sha;
-		$sha .= shift @{$hex_bytes} for 1..20;
-		$last_folder_list->[-1]->{hash} = $sha;
-		1;
-	},
-	I => sub {
-		$last_folder_list = $last_folder_list->[-1]->{list};
-	},
-	U => 
-	Z => 
-);
 
 sub parse {
 	my $buf = shift;
+	my @arr = split "", unpack "H*", $buf;
 	
 	# Тут было готовое решение задачи, но выше упомянутый злодей добрался и
 	# сюда. Чтобы тесты заработали, вам предстоит написать всё заново.
