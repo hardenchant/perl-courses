@@ -24,15 +24,13 @@ subtype 'PositiveInt'
     => as 'Int'
     => where { $_ > 0 && $_ == int $_ };
 
-=head2 IndexEmum
+=head2 IndexEnum
 
 Тип-перечисление ограничивающий значения атрибута значениями: C<primary>, C<uniq>, C<common>.
 
 =cut
 
-subtype 'IndexEnum'
-    => as 'Str'
-    => where { $_ eq 'primary' || $_ eq 'uniq' || $_ eq 'common' };
+enum 'IndexEnum' => qw/primary uniq common/;
 
 =head1 ATTRIBUTES
 
