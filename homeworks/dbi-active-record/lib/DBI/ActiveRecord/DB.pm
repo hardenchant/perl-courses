@@ -133,7 +133,6 @@ sub insert {
         my $attr = $obj->meta->get_attribute($_);
         push @bind, ( $attr->serializer ? $attr->serializer->($obj->$_) : $obj->$_ );
     }
-
     my $autoinc_field = $obj->meta->auto_increment_field;
     my $last_insert_id = $self->_insert($obj->meta->table_name, $autoinc_field, \@ok_fields, \@bind);
     if($autoinc_field) {
@@ -155,6 +154,22 @@ sub insert {
 Значения первичного ключа и остальных полей перед передачей в SQL запрос, должны сериализовываться фунциями C<serialize>, если они оперделены для данных атрибутов.
 
 =cut
+
+sub update {
+    my ($self, $obj) = @_;
+
+    my $ok_fields = $obj->meta->fields;
+    my @bind = ();
+    for(@ok_fields) {
+        my $attr = $obj->meta->get_attribute($_);
+        push @bind, ( $attr->serializer ? $attr->serializer->($obj->$_) : $obj->$_ );
+    }
+
+    my $primary_key_field = $obj->meta->primary_key;
+    my $primary_key_value = $obj->meta->get_attribute($primary_key);
+    $self->_update($obj->meta->table_name, $primary_key_field, $primary_key_value, \@ok_fields, \@bind);
+    return 1;
+}
 
 =head2 delete($obj)
 

@@ -94,6 +94,23 @@ sub _insert {
 
 =cut
 
+sub _update {
+    my ($self, $table, $key_field, $key_value, $fields, $values) = @_;
+
+    my $dbh = $self->connection;
+
+    my $str = join " = ?,", @$fields;
+    
+    $dbh->begin_work;
+    if($dbh->do("UPDATE $table SET $str WHERE $key_field = $key_value", {}, @$values)) {
+        $dbh->commit; 
+    } else {
+        $dbh->rollback;
+        confess "can't do update request!";
+    }
+    return 1;
+}
+
 =head2 _delete($table, $key_field, $key_value)
 
 Метод для непосредственного удаления данных из БД.
