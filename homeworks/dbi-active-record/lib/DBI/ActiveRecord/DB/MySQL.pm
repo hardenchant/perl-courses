@@ -99,10 +99,10 @@ sub _update {
 
     my $dbh = $self->connection;
 
-    my $str = join " = ?,", @$fields;
-    
+    my $str = join " = ?, ", @$fields;
+    $str .= " = ?";
     $dbh->begin_work;
-    if($dbh->do("UPDATE $table SET $str WHERE $key_field = $key_value", {}, @$values)) {
+    if($dbh->do("UPDATE $table SET $str WHERE $key_field=$key_value", {}, @$values)) {
         $dbh->commit; 
     } else {
         $dbh->rollback;

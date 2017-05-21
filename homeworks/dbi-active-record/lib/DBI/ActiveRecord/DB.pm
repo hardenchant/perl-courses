@@ -160,14 +160,14 @@ sub update {
 
     my $ok_fields = $obj->meta->fields;
     my @bind = ();
-    for(@ok_fields) {
+    for(@$ok_fields) {
         my $attr = $obj->meta->get_attribute($_);
         push @bind, ( $attr->serializer ? $attr->serializer->($obj->$_) : $obj->$_ );
     }
 
     my $primary_key_field = $obj->meta->primary_key;
-    my $primary_key_value = $obj->meta->get_attribute($primary_key);
-    $self->_update($obj->meta->table_name, $primary_key_field, $primary_key_value, \@ok_fields, \@bind);
+    my $primary_key_value = $obj->$primary_key_field;
+    $self->_update($obj->meta->table_name, $primary_key_field, $primary_key_value, $ok_fields, \@bind);
     return 1;
 }
 
