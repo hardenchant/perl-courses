@@ -157,8 +157,10 @@ sub insert {
 
 sub update {
     my ($self, $obj) = @_;
+    
+    my $fields = $obj->meta->fields;
+    my @ok_fields = grep { not $obj->meta->get_attribute($_)->auto_increment } @$fields;
 
-    my $ok_fields = $obj->meta->fields;
     my @bind = ();
     for(@$ok_fields) {
         my $attr = $obj->meta->get_attribute($_);
