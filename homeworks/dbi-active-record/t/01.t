@@ -20,7 +20,7 @@ subtest track => sub {
 	
 	$obj->album_id(456);
 	$obj->name("song");
-	$obj->duration("1:2:3");
+	$obj->duration("0:0:10");
 	$obj->create_time(DateTime->from_epoch(epoch => time()));	
 	$exit_code = $obj->update();
 	is($exit_code, 1, "update object");

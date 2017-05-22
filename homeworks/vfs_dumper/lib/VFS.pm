@@ -5,7 +5,6 @@ use warnings;
 use 5.010;
 use File::Basename;
 use File::Spec::Functions qw{catdir};
-use JSON::XS;
 no warnings 'experimental::smartmatch';
 
 my %modes = (
@@ -27,9 +26,11 @@ sub mode2s($) {
 
 
 sub parse {
+	shift;
 	my $buf = shift;
+	print $buf;
 	my @arr = split "", unpack "H*", $buf;
-	
+	#my $command = 
 	# Тут было готовое решение задачи, но выше упомянутый злодей добрался и
 	# сюда. Чтобы тесты заработали, вам предстоит написать всё заново.
 }

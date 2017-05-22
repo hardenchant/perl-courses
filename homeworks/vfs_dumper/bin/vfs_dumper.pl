@@ -14,13 +14,14 @@ unless (@ARGV == 1) {
 	warn "$0 <file>\n";
 }
 
-open (my $f, "<", $ARGV[0]);
+my $f;
+open ($f, "<", $ARGV[0]);
 binmode $f;
 
 my $buf;
 {
 	local $/ = undef;
-	$buf = <>;
+	$buf = <$f>;
 }
 
 VFS->parse($buf);
