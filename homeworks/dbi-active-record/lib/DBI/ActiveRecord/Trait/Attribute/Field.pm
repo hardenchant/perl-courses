@@ -22,7 +22,7 @@ C<DBI::ActiveRecord::Trait::Attribute::Field> - роль-трейт для оп�
 
 subtype 'PositiveInt'
     => as 'Int'
-    => where { $_ > 0 && $_ == int $_ };
+    => where { $_ > 0 };
 
 =head2 IndexEnum
 
